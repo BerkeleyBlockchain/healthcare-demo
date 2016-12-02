@@ -1,24 +1,21 @@
 contract Requests {
 
-    address public requestor;
-
-    string encrypted_requested_data;
-
     struct Request {
-        string patient_name;// : "HASH_OF_PATIENT_NAME"
-        string patient_DOB; //  : "HASH_OF_DOB"
-        string patient_SSN; //  : "HASH_OF_SSN"
+        Requestor requestor;
+        string patient_hash; /* sha3(Patient Name + Patient DOB + Patient SSN)
+                             No spaces, always include middle initial, all lowercase,
+                             mmddyy, 000000000 if patient has no ssn */
         string information; //  : "Arbitrary Information Requested"
         string transaction_state; // Waiting, Pending Verification, Verified, Invalid
     }
 
     struct Requestor {
-        address hospital_address;
+        address participant_address;
         string encrypted_requested_data
-        uint256 urgency;
+        uint256 urgency; // Variable to hold ether that is released upon successful verification
     }
 
-    function create_request(Requestor requestor, Request request){
+    function create_request(Request request){
         /*
         *** Creates a pending request to be fulfilled by another party that already knows the Patient Info Hashes ***
         ** INPUTS
@@ -39,7 +36,7 @@ contract Requests {
         */
     }
 
-    function reply_request(Requestor requestor, Request request){
+    function reply_request(Request request){
         /*
         *** Fulfils an outstanding request on the network ***
 
@@ -57,7 +54,7 @@ contract Requests {
         */
     }
 
-    function validate() returns bool{
+    function validate(Request request, bool valid) returns bool{
         /*
         *** Validation of data upon decryption and manual inspection of the data ***
 
@@ -69,6 +66,14 @@ contract Requests {
         True -> Send the ether, modify average response time
         False -> Don't send ether, re-request data
         */
+
+        if (valid){
+            request.transaction_state = "Verified";
+            //Release funds
+        }else{
+            request.transaction_state = "Invalid";
+            //Return funds to Requestor
+        }
     }
 
 }
