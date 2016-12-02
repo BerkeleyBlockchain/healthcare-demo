@@ -4,6 +4,19 @@ contract Requests {
 
     string encrypted_requested_data;
 
+    struct Request {
+        string patient_name;// : "HASH_OF_PATIENT_NAME"
+        string patient_DOB; //  : "HASH_OF_DOB"
+        string patient_SSN; //  : "HASH_OF_SSN"
+        string information; //  : "Arbitrary Information Requested"
+    }
+
+    struct Requestor {
+        address hospital_address;
+        string encrypted_requested_data;
+        uint256 urgency;
+    }
+
     function create_request(){
         /*
         *** Creates a pending request to be fulfilled by another party that already knows the Patient Info Hashes ***
