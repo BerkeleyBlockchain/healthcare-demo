@@ -9,11 +9,12 @@ contract Requests {
         string patient_DOB; //  : "HASH_OF_DOB"
         string patient_SSN; //  : "HASH_OF_SSN"
         string information; //  : "Arbitrary Information Requested"
+        string transaction_state; // Waiting, Pending Verification, Verified, Invalid
     }
 
     struct Requestor {
         address hospital_address;
-        string encrypted_requested_data;
+        string encrypted_requested_data
         uint256 urgency;
     }
 
