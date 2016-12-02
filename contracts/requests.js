@@ -17,7 +17,7 @@ contract Requests {
         uint256 urgency;
     }
 
-    function create_request(){
+    function create_request(Requestor requestor, Request request){
         /*
         *** Creates a pending request to be fulfilled by another party that already knows the Patient Info Hashes ***
         ** INPUTS
@@ -38,7 +38,7 @@ contract Requests {
         */
     }
 
-    function reply_request(){
+    function reply_request(Requestor requestor, Request request){
         /*
         *** Fulfils an outstanding request on the network ***
 
