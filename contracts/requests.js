@@ -7,6 +7,7 @@ contract Requests {
                              mmddyy, 000000000 if patient has no ssn */
         string information; //  : "Arbitrary Information Requested"
         string transaction_state; // Waiting, Pending Verification, Verified, Invalid
+        address reply_source; // Address of the party replying to the request
     }
 
     struct Requestor {
@@ -15,6 +16,7 @@ contract Requests {
         uint256 urgency; // Variable to hold ether that is released upon successful verification
     }
 
+    /// @notice Will publish a request with 'request.urgency' urgency
     function create_request(Request request){
         /*
         *** Creates a pending request to be fulfilled by another party that already knows the Patient Info Hashes ***
@@ -52,6 +54,9 @@ contract Requests {
         Once validated, the ether is sent to the data sender
 
         */
+        if (request.transaction_state != "Waiting")
+            throw;
+
     }
 
     function validate(Request request, bool valid) returns bool{
@@ -67,12 +72,14 @@ contract Requests {
         False -> Don't send ether, re-request data
         */
 
-        if (valid){
+        if (valid){ 
             request.transaction_state = "Verified";
-            //Release funds
-        }else{
+            msg.sender.send(request.urgency);
+            //Release funds to sender of data
+        }else{ //INVALID data
             request.transaction_state = "Invalid";
             //Return funds to Requestor
+            request.participant_address.send(request.urgency);
         }
     }
 
