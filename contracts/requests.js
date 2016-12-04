@@ -2,7 +2,7 @@ contract Requests {
 
     struct Request {
         Requestor requestor;
-        string patient_hash; /* sha3(Patient Name + Patient DOB + Patient SSN)
+        string request_hash; /* sha3(Patient Name + Patient DOB + Patient SSN)
                              No spaces, always include middle initial, all lowercase,
                              mmddyy, 000000000 if patient has no ssn */
         string information; //  : "Arbitrary Information Requested"
@@ -16,29 +16,14 @@ contract Requests {
         uint256 urgency; // Variable to hold ether that is released upon successful verification
     }
 
-    /// @notice Will publish a request with 'request.urgency' urgency
-    function create_request(Request request){
-        /*
-        *** Creates a pending request to be fulfilled by another party that already knows the Patient Info Hashes ***
-        ** INPUTS
-        User Inputs might include:
-            *Urgency - A sort of rating to determine the urgency of the request. This should also be used to calculate an ether cost
-            *Desired Info - A JSON object with a format that can be similar to the following
-                {
-                patient_name : "HASH_OF_PATIENT_NAME"
-                patient_DOB  : "HASH_OF_DOB"
-                patient_SSN  : "HASH_OF_SSN"
-                information  : "Arbitrary Information Requested"
-            }
+    Request req;
 
-
-        ** OUTPUTS
-        The USER INPUTS are ALSO broadcast to the network to create this pending request.
-        Anyone with the corresponding patient information hashes should be able to fulfill the request and is incentivized by Ether reward
-        */
+    function create_request(Request request) payable{
+        // *** Creates a pending request to be fulfilled by another party that already knows the Patient Info Hashes ***
+        req = request;
     }
 
-    function reply_request(Request request){
+    function reply_request(Request request) payable{
         /*
         *** Fulfils an outstanding request on the network ***
 
@@ -54,12 +39,22 @@ contract Requests {
         Once validated, the ether is sent to the data sender
 
         */
-        if (request.transaction_state != "Waiting")
+        if (request.transaction_state != "Waiting") {
             throw;
+        }
+
+        if (stringsEqual(request.request_hash, req.request_hash)) {
+            req.encrypted_response_data = request.encrypted_data;
+            req.reply_source = msg.sender;
+            req.transaction_state = "Pending Verification";
+        } else {
+            throw;
+        }
+
 
     }
 
-    function validate(Request request, bool valid) returns bool{
+    function validate(Request request, bool valid) payable returns (bool) {
         /*
         *** Validation of data upon decryption and manual inspection of the data ***
 
@@ -71,16 +66,31 @@ contract Requests {
         True -> Send the ether, modify average response time
         False -> Don't send ether, re-request data
         */
-
-        if (valid){ 
-            request.transaction_state = "Verified";
-            msg.sender.send(request.urgency);
-            //Release funds to sender of data
-        }else{ //INVALID data
-            request.transaction_state = "Invalid";
-            //Return funds to Requestor
-            request.participant_address.send(request.urgency);
+        if (stringsEqual(request.request_hash, req.request_hash)){
+            if (valid){
+                req.transaction_state = "Verified";
+                req.reply_source.send(request.urgency);
+                //Release funds to sender of data
+            }else{ //INVALID data
+                req.transaction_state = "Invalid";
+                //Return funds to Requestor
+                req.encrypted_data = "";
+                req.participant_address.send(request.urgency);
+            }
+        } else{
+        throw;
         }
+    }
+
+    function stringsEqual(string storage _a, string memory _b) internal returns (bool) {
+        bytes storage a = bytes(_a);
+        bytes memory b = bytes(_b);
+        if (a.length != b.length)
+            return false;
+        for (uint i = 0; i < a.length; i ++)
+            if (a[i] != b[i])
+                return false;
+        return true;
     }
 
 }
