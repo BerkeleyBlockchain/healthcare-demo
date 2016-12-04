@@ -4,9 +4,9 @@ contract Requests {
         Requestor requestor;
         string request_hash; /* sha3(Patient Name + Patient DOB + Patient SSN)
                              No spaces, always include middle initial, all lowercase,
-                             mmddyy, 000000000 if patient has no ssn */
+                             mmddyyyy, 000000000 if patient has no ssn */
         string information; //  : "Arbitrary Information Requested"
-        string transaction_state; // Waiting, Pending Verification, Verified, Invalid
+        string transaction_state; // Waiting, Pending Verification, Verified, Invalid, Timed Out
         address reply_source; // Address of the party replying to the request
     }
 
