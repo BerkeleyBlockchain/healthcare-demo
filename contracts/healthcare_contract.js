@@ -2,7 +2,7 @@ pragma solidity ^0.4.0;
 
 contract Requests {
 
-    address public requestor;
+    address requestor;
 
     string public encrypted_response_data;
 
@@ -10,9 +10,9 @@ contract Requests {
 
     uint public reward;
 
-    address public responder;
+    address responder;
 
-    mapping(address => uint) public accumulated_rewards;
+    mapping(address => uint) accumulated_rewards;
 
     function Requests() {
     }
@@ -51,15 +51,20 @@ contract Requests {
         if (valid) {
             if (stringsEqual(request_hash, request)) {
                 request_hash = "";
-                accumulated_rewards[responder] = reward;
+                accumulated_rewards[responder] += reward;
                 reward = 0;
+                return true;
             }
         } else {
             encrypted_response_data = "";
             responder = address(0);
         }
+        return false;
     }
 
+    function check_accumulated_rewards() constant returns (uint) {
+        return accumulated_rewards[msg.sender];
+    }
     /*
     Someone withdraws their funds, if they have any.
     */
