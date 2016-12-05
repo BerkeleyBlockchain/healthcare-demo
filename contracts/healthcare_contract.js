@@ -12,9 +12,8 @@ contract Requests {
 
     address responder;
 
-    mapping(address => uint) accumulated_rewards;
-
     function Requests() {
+        requestor = msg.sender;
     }
 
     /*
@@ -24,7 +23,6 @@ contract Requests {
         if (!stringsEqual(request_hash, "")) {
             throw;
         }
-        requestor = msg.sender;
         request_hash = requested_data_hash;
         reward = msg.value;
     }
@@ -50,35 +48,19 @@ contract Requests {
         if (msg.sender != requestor) { throw; }
         if (valid) {
             if (stringsEqual(request_hash, request)) {
-                request_hash = "";
-                accumulated_rewards[responder] += reward;
+                /* Send reward to responder, self-destruct. */
+                var amount = reward;
                 reward = 0;
-                return true;
+                if (!responder.send(amount)) {
+                    reward = amount;
+                }
+                selfdestruct(requestor);
             }
         } else {
             encrypted_response_data = "";
             responder = address(0);
         }
         return false;
-    }
-
-    function check_accumulated_rewards() constant returns (uint) {
-        return accumulated_rewards[msg.sender];
-    }
-    /*
-    Someone withdraws their funds, if they have any.
-    */
-    function withdraw() returns (bool) {
-        var amount = accumulated_rewards[msg.sender];
-        if (amount > 0) {
-            accumulated_rewards[msg.sender] = 0;
-
-            if (!msg.sender.send(amount)) {
-                accumulated_rewards[msg.sender] = amount;
-                return false;
-            }
-        }
-        return true;
     }
 
     function stringsEqual(string storage _a, string memory _b) internal returns (bool) {
