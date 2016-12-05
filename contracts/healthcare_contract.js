@@ -12,6 +12,8 @@ contract Requests {
 
     address responder;
 
+    string public public_key;
+
     function Requests() {
         requestor = msg.sender;
     }
@@ -19,12 +21,13 @@ contract Requests {
     /*
     Creates a request for a document with headers that match the hash.
     */
-    function create_request(string requested_data_hash) payable {
+    function create_request(string requested_data_hash, string public_key) payable {
         if (!stringsEqual(request_hash, "")) {
             throw;
         }
         request_hash = requested_data_hash;
         reward = msg.value;
+        public_key = public_key;
     }
 
     /*
