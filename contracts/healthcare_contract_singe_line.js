@@ -9,7 +9,7 @@ var healthcare = healthcareContract.new({from:eth.accounts[0], data: healthcareC
 
 healthcare.create_request("stevencheng", {from: eth.accounts[0], value: web3.toWei(10, 'ether')});
 
-healthcare.respond.sendTransaction("stevencheng", "mj420", {from: eth.accounts[0]})
+healthcare.respond.sendTransaction("stevencheng", "Medications: HUMULIN INJ 70/30 20 u ac breakfast PRINIVIL TABS 20 MG 1 qd", {from: eth.accounts[0]})
 
 healthcare.validate.sendTransaction("stevencheng", true, {from: eth.accounts[0]})
 
